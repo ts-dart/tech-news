@@ -26,14 +26,17 @@ def scrape_next_page_link(html_content):
 
 def scrape_noticia(html_content):
     selector = Selector(text=html_content)
-    title = selector.css('h1.entry-title ::text').get()
 
     news = {
-        'url': get_url(title, selector.css('link ::attr(href)').getall()),
-        'title': selector.css('h1.entry-title ::text').get(),
+        'url': get_url(selector.css('link ::attr(href)').getall()),
+        'title': (
+            selector.css('h1.entry-title ::text').get()
+            .replace(u'\xa0', u'').strip()
+        ),
         'writer': selector.css('span.author a ::text').get(),
         'summary': (
-            re.sub('<.*?>', '', selector.css('p').get()).replace(u'\xa0', u'')
+            re.sub('<.*?>', '', selector.css('p').get())
+            .replace(u'\xa0', u'').strip()
         ),
         'comments_count': len(selector.css('ol.comment-list li').getall()),
         'timestamp': selector.css('li.meta-date ::text').get(),
@@ -41,17 +44,14 @@ def scrape_noticia(html_content):
         'category': selector.css('span.label ::text').get(),
     }
 
-    ''' print('-----------------')
-    print(news)
-    print('-----------------')
-    print(news['summary']) '''
     return news
 
 
-def get_url():
-    ...
+def get_url(href_list):
+    for href in href_list:
+        if 'blog.betrybe.com' in href:
+            return href
 
-    # selector.css('link ::attr(href)').getall()[3][:-len('amp/')]
 
 # Requisito 5
 def get_tech_news(amount):
